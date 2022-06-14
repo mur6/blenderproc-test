@@ -8,4 +8,6 @@ $ source .venv/bin/activate.fish
 ```
 
 ## Render
-
+```
+blenderproc run put_on_floor.py
+```

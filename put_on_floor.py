@@ -15,7 +15,7 @@ floor_z = 0
 
 def create_room_planes():
     room_planes = [
-        bproc.object.create_primitive("PLANE", scale=[5, 5, 0], location=[0, -2, 2]),
+        bproc.object.create_primitive("PLANE", scale=[5, 5, 1]),
         # bproc.object.create_primitive(
         #     "PLANE", scale=[2, 2, 1], location=[0, -2, 2], rotation=[-1.570796, 0, 0]
         # ),

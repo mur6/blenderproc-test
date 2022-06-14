@@ -9,7 +9,7 @@ import numpy as np
 bproc.init()
 
 # load the objects into the scene
-obj = bproc.loader.load_obj("mat_plane.obj")[0]
+obj = bproc.loader.load_obj("data/mat_plane.obj")[0]
 # obj.set_location(np.zeros(3))
 obj.set_location([0, 0, 0.001])
 obj.set_scale([0.42, 0.42, 0.25])
