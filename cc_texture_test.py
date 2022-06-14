@@ -43,11 +43,11 @@ def render(ground, poi, texture):
     ground.set_material(0, texture)
 
     bproc.camera.add_camera_pose(make_camera_position(poi))
-    #bproc.camera.add_camera_pose(make_camera_position(poi))
+    bproc.camera.add_camera_pose(make_camera_position(poi))
 
     data = bproc.renderer.render()
     bproc.writer.write_hdf5("output", data, append_to_existing_output=True)
-    return data
+    bproc.utility.reset_keyframes()
 
 
 def main():
@@ -62,13 +62,11 @@ def main():
 
     bproc.camera.set_resolution(512, 512)
 
-    for i in range(4, 6+1):
+    for i in range(0, 3):
         t = cc_textures[i]
         print("########################################")
         print(t.get_name())
         render(ground, poi, t)
-        # data1 = render(ground, poi, cc_textures[2])
-        # data2 = render(ground, poi, cc_textures[3])
 
     # data = {"colors": data1["colors"] + data2["colors"]}
 
