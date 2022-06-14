@@ -1,5 +1,4 @@
 .venv/
 datasets/
-output/
 output_coco_data/
 data/outputs/
