@@ -1,5 +1,6 @@
 import blenderproc as bproc
 
+import pprint
 import random
 from functools import reduce
 import pathlib
@@ -38,23 +39,38 @@ def setup_light():
     light.set_energy(1000)
 
 
+def render(ground, poi, texture):
+    ground.set_material(0, texture)
+
+    bproc.camera.add_camera_pose(make_camera_position(poi))
+    #bproc.camera.add_camera_pose(make_camera_position(poi))
+
+    data = bproc.renderer.render()
+    bproc.writer.write_hdf5("output", data, append_to_existing_output=True)
+    return data
+
+
 def main():
     ground = bproc.object.create_primitive("PLANE", scale=[5, 5, 1])
     poi = bproc.object.compute_poi([ground])
 
     cc_textures = bproc.loader.load_ccmaterials("datasets")
 
-    ground.add_material(cc_textures[5])
+    ground.add_material(cc_textures[0])
 
     setup_light()
 
     bproc.camera.set_resolution(512, 512)
 
-    bproc.camera.add_camera_pose(make_camera_position(poi))
-    bproc.camera.add_camera_pose(make_camera_position(poi))
+    for i in range(4, 6+1):
+        t = cc_textures[i]
+        print("########################################")
+        print(t.get_name())
+        render(ground, poi, t)
+        # data1 = render(ground, poi, cc_textures[2])
+        # data2 = render(ground, poi, cc_textures[3])
 
-    data = bproc.renderer.render()
-    bproc.writer.write_hdf5("output", data)
+    # data = {"colors": data1["colors"] + data2["colors"]}
 
 
 if __name__ == '__main__':
