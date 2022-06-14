@@ -2,9 +2,10 @@ import blenderproc as bproc
 
 import random
 from functools import reduce
-import operator
+import pathlib
 
 import numpy as np
+
 
 bproc.init()
 
@@ -42,17 +43,13 @@ def main():
 
     bproc.camera.set_resolution(512, 512)
 
-    # location = np.random.uniform([-1.35, -1.35, 1.95], [1.35, 1.35, 1.95])
-    # rotation_matrix = bproc.camera.rotation_from_forward_vec(location, inplane_rot=np.random.uniform(-0.7854, 0.7854))
-    # matrix_world = bproc.math.build_transformation_mat(location, rotation_matrix)
-    location = np.random.uniform([-1.35, -1.35, 1.95], [1.35, 1.35, 1.95])
-    inplane_rot = np.random.uniform(-0.7854, 0.7854)
-    b = poi - location
-    rotation_matrix = bproc.camera.rotation_from_forward_vec(b, inplane_rot=inplane_rot)
-
-    # bproc.camera.add_camera_pose(matrix_world)
-    cam_pose = bproc.math.build_transformation_mat([1, 1, 3], rotation_matrix)
-    bproc.camera.add_camera_pose(cam_pose)
+    with pathlib.Path("data/camera_positions.tsv").open() as f:
+        for line in f.readlines():
+            line = [float(x) for x in line.split()]
+            position, euler_rotation = line[:3], line[3:6]
+            matrix_world = bproc.math.build_transformation_mat(position, euler_rotation)
+            bproc.camera.add_camera_pose(matrix_world)
+            print(line)
 
     data = bproc.renderer.render()
     bproc.writer.write_hdf5("output", data)
