@@ -130,6 +130,7 @@ def main():
     for count, texture in enumerate(cc_textures[:2], 1):
         list_of_keypoints = sample_random_camera(ground, poi, keypoints_builder, texture)
         _render_and_save(count=count, list_of_keypoints=list_of_keypoints)
+        bproc.utility.reset_keyframes()
 
 
 if __name__ == '__main__':
