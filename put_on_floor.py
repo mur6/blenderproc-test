@@ -4,6 +4,7 @@ import json
 import pathlib
 from functools import reduce
 import operator
+import time
 
 import numpy as np
 import bpy
@@ -87,7 +88,7 @@ def sample_random_camera(ground, poi, keypoints_builder, texture):
     ground.set_material(0, texture)
     list_of_keypoints = []
 
-    for _ in range(2):
+    for _ in range(7):
         # Sample random camera location above objects
         location = np.random.uniform([-1.35, -1.35, 1.95], [1.35, 1.35, 1.95])
         # Compute rotation based on vector going from location towards poi
@@ -127,10 +128,11 @@ def main():
         lis = [[*tp, 2] for tp in _iter_tpls()]
         return reduce(operator.add, lis, [])
 
-    for count, texture in enumerate(cc_textures[:2], 1):
+    for count, texture in enumerate(cc_textures[:8], 1):
         list_of_keypoints = sample_random_camera(ground, poi, keypoints_builder, texture)
         _render_and_save(count=count, list_of_keypoints=list_of_keypoints)
         bproc.utility.reset_keyframes()
+        time.sleep(8)
 
 
 if __name__ == '__main__':
