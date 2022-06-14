@@ -10,7 +10,16 @@ import numpy as np
 bproc.init()
 
 
-def main():
+def make_camera_position(poi):
+    location = np.random.uniform([-1.35, -1.35, 1.95], [1.35, 1.35, 1.95])
+    inplane_rot = np.random.uniform(-0.7854, 0.7854)
+    forward_vec = poi - location
+    rotation_matrix = bproc.camera.rotation_from_forward_vec(forward_vec, inplane_rot=inplane_rot)
+    cam_pose = bproc.math.build_transformation_mat([1, 1, 3], rotation_matrix)
+    return cam_pose
+
+
+def make_mat_plane():
     # load the objects into the scene
     obj = bproc.loader.load_obj("data/mat_plane.obj")[0]
     # obj.set_location(np.zeros(3))
@@ -20,36 +29,29 @@ def main():
     # print(f"scale={scale}")
     obj.set_cp("category_id", 1)
     ### target_objs = [obj]
-    poi = bproc.object.compute_poi([obj])
 
-    cc_textures = bproc.loader.load_ccmaterials("datasets")
-    for c in cc_textures:
-        print(c.get_name())
-    print("########################")
 
-    # for i in range(1):
-    #     c = random.choice(cc_textures)
-    #     print(c.get_name())
-
-    obj = bproc.object.create_primitive("PLANE", scale=[5, 5, 1])
-    mat = random.choice(cc_textures)
-    print(mat.get_name())
-    obj.add_material(mat)
-
+def setup_light():
     light = bproc.types.Light()
     light.set_type("POINT")
     light.set_location([5, -5, 5])
     light.set_energy(1000)
 
+
+def main():
+    ground = bproc.object.create_primitive("PLANE", scale=[5, 5, 1])
+    poi = bproc.object.compute_poi([ground])
+
+    cc_textures = bproc.loader.load_ccmaterials("datasets")
+
+    ground.add_material(cc_textures[5])
+
+    setup_light()
+
     bproc.camera.set_resolution(512, 512)
 
-    with pathlib.Path("data/camera_positions.tsv").open() as f:
-        for line in f.readlines():
-            line = [float(x) for x in line.split()]
-            position, euler_rotation = line[:3], line[3:6]
-            matrix_world = bproc.math.build_transformation_mat(position, euler_rotation)
-            bproc.camera.add_camera_pose(matrix_world)
-            print(line)
+    bproc.camera.add_camera_pose(make_camera_position(poi))
+    bproc.camera.add_camera_pose(make_camera_position(poi))
 
     data = bproc.renderer.render()
     bproc.writer.write_hdf5("output", data)
