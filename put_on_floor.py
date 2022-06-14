@@ -15,7 +15,7 @@ floor_z = 0
 
 def create_room_planes():
     room_planes = [
-        bproc.object.create_primitive("PLANE", scale=[5, 5, 0]),
+        bproc.object.create_primitive("PLANE", scale=[5, 5, 0], location=[0, -2, 2]),
         # bproc.object.create_primitive(
         #     "PLANE", scale=[2, 2, 1], location=[0, -2, 2], rotation=[-1.570796, 0, 0]
         # ),
@@ -90,7 +90,7 @@ def make_light_2():
 bproc.init()
 
 # load the objects into the scene
-obj = bproc.loader.load_obj("mat_plane.obj")[0]
+obj = bproc.loader.load_obj("data/mat_plane.obj")[0]
 # obj.set_location(np.zeros(3))
 obj.set_location([0, 0, floor_z + 0.001])
 obj.set_scale([0.42, 0.42, 0.25])
@@ -191,7 +191,7 @@ for i in range(3):
 
 import json
 js_str = json.dumps(list_of_keypoints, indent=4)
-pathlib.Path("list_of_keypoints.json").write_text(js_str)
+pathlib.Path("data/outputs/list_of_keypoints.json").write_text(js_str)
 
 # Enable transparency so the background becomes transparent
 #bproc.renderer.set_output_format(enable_transparency=True)
