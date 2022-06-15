@@ -17,6 +17,9 @@ custom_transform = A.Compose(
                 A.Cutout(
                     num_holes=30, max_h_size=30, max_w_size=30, fill_value=64, p=1
                 ),
+                # A.CoarseDropout(
+                #     max_holes=30, max_height=30, max_width=30, fill_value=64, p=1
+                # ),
                 # A.GridDistortion(p=0.1),
                 # A.Affine(p=0.5),
             ],
@@ -32,7 +35,6 @@ custom_transform = A.Compose(
         ),
         A.OneOf(
             [
-                A.IAAAdditiveGaussianNoise(),
                 A.GaussNoise(),
                 A.RandomBrightnessContrast(p=0.2),
             ],
