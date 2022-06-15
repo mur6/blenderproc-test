@@ -26,26 +26,58 @@ def _iter_coco_anno(im_list, anno_list, image_dir):
 
 
 transform = A.Compose(
+    # [
+    #     A.RandomCrop(width=330, height=330),
+    #     A.RandomBrightnessContrast(p=0.2),
+    # ],
     [
-        A.RandomCrop(width=330, height=330),
-        A.RandomBrightnessContrast(p=0.2),
+        # A.RandomCrop(width=512, height=512),
+        A.Rotate(limit=40, p=0.9, border_mode=cv2.BORDER_CONSTANT),
+        A.HorizontalFlip(p=0.5),
+        A.VerticalFlip(p=0.1),
+        A.RandomBrightnessContrast(),
+        A.CoarseDropout(),
+        A.RGBShift(r_shift_limit=25, g_shift_limit=25, b_shift_limit=25, p=0.9),
+        A.OneOf(
+            [
+                A.Blur(blur_limit=3, p=0.5),
+                A.ColorJitter(p=0.5),
+            ],
+            p=1.0,
+        ),
     ],
     keypoint_params=A.KeypointParams(
         format="xy",
-        label_fields=["class_labels"],
-        remove_invisible=True,
-        angle_in_degrees=True,
+        # label_fields=["class_labels"],
+        # remove_invisible=True,
+        # angle_in_degrees=True,
     ),
 )
 
 
-def reg(file_path):
+def reg(file_path, keypoints):
+    def _iter():
+        for i in range(0, len(keypoints), 3):
+            yield tuple(keypoints[i : i + 2])
+
+    keypoints = list(_iter())
+    print(keypoints)
     f = str(file_path)
     image = cv2.imread(f)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    transformed = transform(image=image, keypoints=keypoints)
-    transformed_image = transformed["image"]
-    transformed_keypoints = transformed["keypoints"]
+    # transformed = transform(image=image, keypoints=keypoints)
+
+    images_list = [image]
+    for _ in range(5):
+        transformed = transform(image=image, keypoints=keypoints)  # bboxes=bboxes)
+        transformed_image = transformed["image"]
+        transformed_keypoints = transformed["keypoints"]
+        # if len(augmentations["bboxes"]) == 0:
+        #    continue
+
+        images_list.append(transformed_image)
+        # saved_bboxes.append(augmentations["bboxes"][0])
+    plot_examples(images_list)
 
 
 def main(base_dir):
@@ -55,8 +87,48 @@ def main(base_dir):
     im_list = d["images"]
     anno_list = d["annotations"]
     for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
-        reg(file_path)
+        reg(file_path, anno["keypoints"])
         break
+
+
+###########################################
+# import random
+import cv2
+from matplotlib import pyplot as plt
+
+# import matplotlib.patches as patches
+# import numpy as np
+import albumentations as A
+
+
+def visualize(image):
+    plt.figure(figsize=(10, 10))
+    plt.axis("off")
+    plt.imshow(image)
+    plt.show()
+
+
+def plot_examples(images, bboxes=None):
+    fig = plt.figure(figsize=(15, 15))
+    columns = 4
+    rows = 5
+
+    for i in range(1, len(images)):
+        if bboxes is not None:
+            img = visualize_bbox(images[i - 1], bboxes[i - 1], class_name="Elon")
+        else:
+            img = images[i - 1]
+        fig.add_subplot(rows, columns, i)
+        plt.imshow(img)
+    plt.show()
+
+
+# From https://albumentations.ai/docs/examples/example_bboxes/
+def visualize_bbox(img, bbox, class_name, color=(255, 0, 0), thickness=5):
+    """Visualizes a single bounding box on the image"""
+    x_min, y_min, x_max, y_max = map(int, bbox)
+    cv2.rectangle(img, (x_min, y_min), (x_max, y_max), color, thickness)
+    return img
 
 
 if __name__ == "__main__":
