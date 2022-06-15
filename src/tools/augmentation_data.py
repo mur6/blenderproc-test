@@ -24,14 +24,20 @@ def _iter_coco_anno(im_list, anno_list, image_dir):
         yield file_name, im, anno
 
 
+def reg(file_path):
+    f = str(file_path)
+    image = cv2.imread(f)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+
 def main(base_dir):
     image_dir = base_dir / "mathand" / "train"
     coco_json = base_dir / "mathand_train.json"
     d = load(coco_json)
     im_list = d["images"]
     anno_list = d["annotations"]
-    for file_name, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
-        print(file_name)
+    for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
+        reg(file_path)
         break
 
 
