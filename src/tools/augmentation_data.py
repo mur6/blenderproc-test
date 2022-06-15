@@ -121,9 +121,44 @@ def main(base_dir):
         break
 
 
-###########################################
-# import random
+def check_images(file_path, keypoints, bbox):
+    f = str(file_path)
+    image = cv2.imread(f)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
+
+
+from matplotlib import pyplot as plt
+
+
+def main2(base_dir):
+    image_dir = base_dir / "mathand" / "train"
+    coco_json = base_dir / "mathand_train.json"
+    d = load(coco_json)
+    im_list = d["images"]
+    anno_list = d["annotations"]
+
+    fig = plt.figure(figsize=(15, 15))
+    columns = 8
+    rows = 8
+    count = 1
+
+    def _iter(keypoints):
+        for i in range(0, len(keypoints), 3):
+            yield tuple(keypoints[i : i + 2])
+
+    for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
+        assert im["id"] == anno["image_id"]
+        keypoints = list(_iter(anno["keypoints"]))
+        print(f"keypoints: {keypoints}")
+        image = check_images(file_path, keypoints, anno["bbox"])
+        img = src.tools.aug.utils.visualize_bbox(image, anno["bbox"], keypoints)
+        fig.add_subplot(rows, columns, count)
+        count += 1
+        plt.imshow(image)
+    plt.show()
+
 
 if __name__ == "__main__":
     base_dir = sys.argv[1]
-    main(pathlib.Path(base_dir))
+    main2(pathlib.Path(base_dir))
