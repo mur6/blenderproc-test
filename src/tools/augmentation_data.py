@@ -132,7 +132,7 @@ from matplotlib import pyplot as plt
 
 
 def main2(base_dir):
-    image_dir = base_dir / "mathand" / "train"
+    image_dir = base_dir / "images"  # / "mathand" / "train"
     coco_json = base_dir / "mathand_train.json"
     d = load(coco_json)
     im_list = d["images"]

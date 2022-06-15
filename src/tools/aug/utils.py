@@ -34,6 +34,6 @@ def visualize_bbox(img, bbox, keypoints, color=(255, 0, 0), thickness=5):
     keypoints = [tuple(map(int, xy)) for xy in keypoints]
     for x, y in keypoints:
         cv2.circle(img, (x, y), 1, (0, 255, 0), thickness)
-    x_min, y_min, x_max, y_max = map(int, bbox)
-    cv2.rectangle(img, (x_min, y_min), (x_max, y_max), color, thickness)
+    x_min, y_min, w, h = map(int, bbox)
+    cv2.rectangle(img, (x_min, y_min), (x_min + w, y_min + h), color, thickness)
     return img

@@ -76,18 +76,18 @@ def _write_keypoints_and_bbox_data(*, output_dir, keypoints_list, bbox_list):
 
 
 def _iter_class_segmaps_conv_to_bbox(class_segmap_list):
-    def calc_bbox(x_ary, y_ary):
+    def calc_bbox(*, x_ary, y_ary):
         x_min = x_ary.min()
         x_max = x_ary.max()
-        y_min = Y_MAX_PIXELS - y_ary.max()
-        y_max = Y_MAX_PIXELS - y_ary.min()
+        y_min = y_ary.min()  # Y_MAX_PIXELS - y_ary.max()
+        y_max = y_ary.max()  # Y_MAX_PIXELS - y_ary.min()
         width = x_max - x_min
         height = y_max - y_min
         return x_min, y_min, width, height
 
     for item in class_segmap_list:
         y_ary, x_ary = np.where(item == 1)
-        x, y, width, height = map(int, calc_bbox(x_ary, y_ary))
+        x, y, width, height = map(int, calc_bbox(x_ary=x_ary, y_ary=y_ary))
         yield x, y, width, height
 
 
@@ -187,7 +187,7 @@ def main():
     ground.add_material(cc_textures[0])
 
     render_all(
-        obj, ground, poi, cc_textures=cc_textures, texture_count=1, sample_count=1
+        obj, ground, poi, cc_textures=cc_textures, texture_count=1, sample_count=5
     )
 
 
