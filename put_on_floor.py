@@ -5,7 +5,7 @@ import sys
 sys.path.append(".")
 
 import json
-import pathlib
+import random
 from functools import reduce
 import operator
 import time
@@ -27,8 +27,16 @@ def make_light_2():
     light = bproc.types.Light()
     light.set_type("POINT")
     light.set_location([5, -5, 5])
+    # loc = bproc.sampler.shell(
+    #     center=[5, -5, 5],
+    #     radius_min=4,
+    #     radius_max=7,
+    #     elevation_min=2,
+    #     elevation_max=10,
+    # )
+    # light.set_location(loc)
     light.set_color([1, 1, 1])
-    light.set_energy(1200)  # random.uniform(100, 550))
+    light.set_energy(1200)
 
 
 def make_target_mat_obj():
@@ -89,13 +97,13 @@ def _convert_camera_coord(coord_2d, *, render_size):
     return x, y
 
 
-def sample_random_camera(ground, poi, *, keypoints_builder, texture, sample_count):
+def sample_random_camera(obj, ground, poi, *, keypoints_builder, texture, sample_count):
     ground.set_material(0, texture)
     list_of_keypoints = []
 
     for _ in range(sample_count):
         # Sample random camera location above objects
-        location = np.random.uniform([-1.35, -1.35, 1.95], [1.35, 1.35, 1.95])
+        location = np.random.uniform([-1.35, -1.35, 0.95], [1.35, 1.35, 2.35])
         # Compute rotation based on vector going from location towards poi
         rotation_matrix = bproc.camera.rotation_from_forward_vec(
             poi - location, inplane_rot=np.random.uniform(-0.7854, 0.7854)
@@ -108,13 +116,17 @@ def sample_random_camera(ground, poi, *, keypoints_builder, texture, sample_coun
         keypoints = keypoints_builder(bpy.context.scene, bpy.context.scene.camera)
         list_of_keypoints.append(keypoints)
 
+    # Add dust to all materials of the loaded object
+    # for material in obj.get_materials():
+    #     bproc.material.add_dust(material, strength=0.8, texture_scale=0.05)
+
     return list_of_keypoints
 
 
 bproc.init()
 
 
-def render_all(ground, poi, *, cc_textures, texture_count, sample_count):
+def render_all(obj, ground, poi, *, cc_textures, texture_count, sample_count):
     render_size = set_resolution_and_get_render_size()
 
     def keypoints_builder(scene, camera):
@@ -129,6 +141,7 @@ def render_all(ground, poi, *, cc_textures, texture_count, sample_count):
 
     for count, texture in enumerate(cc_textures[:texture_count], 1):
         list_of_keypoints = sample_random_camera(
+            obj,
             ground,
             poi,
             keypoints_builder=keypoints_builder,
@@ -150,7 +163,9 @@ def main():
     cc_textures = bproc.loader.load_ccmaterials(MATERIALS_PATH)
     ground.add_material(cc_textures[0])
 
-    render_all(ground, poi, cc_textures=cc_textures, texture_count=1, sample_count=2)
+    render_all(
+        obj, ground, poi, cc_textures=cc_textures, texture_count=8, sample_count=8
+    )
 
 
 if __name__ == "__main__":
