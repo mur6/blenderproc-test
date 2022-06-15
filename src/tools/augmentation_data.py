@@ -30,61 +30,71 @@ transform = A.Compose(
     #     A.RandomCrop(width=330, height=330),
     #     A.RandomBrightnessContrast(p=0.2),
     # ],
-    # [
-    #     # A.RandomCrop(width=512, height=512),
-    #     A.Rotate(limit=40, p=0.9, border_mode=cv2.BORDER_CONSTANT),
-    #     A.HorizontalFlip(p=0.5),
-    #     A.VerticalFlip(p=0.1),
-    #     A.RandomBrightnessContrast(),
-    #     A.CoarseDropout(),
-    #     A.RGBShift(r_shift_limit=25, g_shift_limit=25, b_shift_limit=25, p=0.9),
-    #     A.OneOf(
-    #         [
-    #             A.Blur(blur_limit=3, p=0.5),
-    #             A.ColorJitter(p=0.5),
-    #         ],
-    #         p=1.0,
-    #     ),
-    # ],
     [
-        A.RandomRotate90(),
-        A.Flip(),
-        A.Transpose(),
+        # A.RandomCrop(width=512, height=512),
+        A.Rotate(limit=40, p=0.9, border_mode=cv2.BORDER_CONSTANT),
+        A.HorizontalFlip(p=0.5),
+        A.VerticalFlip(p=0.1),
+        # A.RandomBrightnessContrast(),
         A.OneOf(
             [
-                A.IAAAdditiveGaussianNoise(),
-                A.GaussNoise(),
-            ],
-            p=0.2,
-        ),
-        A.OneOf(
-            [
-                A.MotionBlur(p=0.2),
-                A.MedianBlur(blur_limit=3, p=0.1),
-                A.Blur(blur_limit=3, p=0.1),
-            ],
-            p=0.2,
-        ),
-        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
-        A.OneOf(
-            [
-                A.OpticalDistortion(p=0.3),
-                A.GridDistortion(p=0.1),
+                # A.OpticalDistortion(p=0.3),
+                A.Cutout(
+                    num_holes=30, max_h_size=30, max_w_size=30, fill_value=64, p=1
+                ),
+                # A.GridDistortion(p=0.1),
                 A.IAAPiecewiseAffine(p=0.3),
             ],
             p=0.2,
         ),
+        A.RGBShift(r_shift_limit=25, g_shift_limit=25, b_shift_limit=25, p=0.9),
         A.OneOf(
             [
-                A.CLAHE(clip_limit=2),
-                A.IAASharpen(),
-                A.IAAEmboss(),
-                A.RandomBrightnessContrast(),
+                A.Blur(blur_limit=3, p=0.5),
+                A.ColorJitter(p=0.5),
             ],
-            p=0.3,
+            p=1.0,
         ),
-        A.HueSaturationValue(p=0.3),
     ],
+    # [
+    #     A.RandomRotate90(),
+    #     A.Flip(),
+    #     A.Transpose(),
+    #     A.OneOf(
+    #         [
+    #             A.IAAAdditiveGaussianNoise(),
+    #             A.GaussNoise(),
+    #         ],
+    #         p=0.2,
+    #     ),
+    #     A.OneOf(
+    #         [
+    #             A.MotionBlur(p=0.2),
+    #             A.MedianBlur(blur_limit=3, p=0.1),
+    #             A.Blur(blur_limit=3, p=0.1),
+    #         ],
+    #         p=0.2,
+    #     ),
+    #     A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+    #     A.OneOf(
+    #         [
+    #             # A.OpticalDistortion(p=0.3),
+    #             # A.GridDistortion(p=0.1),
+    #             A.IAAPiecewiseAffine(p=0.3),
+    #         ],
+    #         p=0.2,
+    #     ),
+    #     A.OneOf(
+    #         [
+    #             A.CLAHE(clip_limit=2),
+    #             A.IAASharpen(),
+    #             A.IAAEmboss(),
+    #             A.RandomBrightnessContrast(),
+    #         ],
+    #         p=0.3,
+    #     ),
+    #     A.HueSaturationValue(p=0.3),
+    # ],
     keypoint_params=A.KeypointParams(
         format="xy",
         # label_fields=["class_labels"],
@@ -107,7 +117,7 @@ def reg(file_path, keypoints):
     # transformed = transform(image=image, keypoints=keypoints)
 
     images_list = [image]
-    for _ in range(5):
+    for _ in range(15):
         transformed = transform(image=image, keypoints=keypoints)  # bboxes=bboxes)
         transformed_image = transformed["image"]
         transformed_keypoints = transformed["keypoints"]
