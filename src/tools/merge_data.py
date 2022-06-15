@@ -5,7 +5,7 @@ import shutil
 import sys
 
 
-OUTPUT_DATA_DIR = pathlib.Path("data/outputs/coco")
+OUTPUT_DATA_DIR = pathlib.Path("data/outputs/coco2")
 
 
 def load(p):
@@ -49,7 +49,7 @@ def image_file_copy(dist_dir):
         src_im_path = make_source_image_path(number_dir, file_name)
         dist_im_path = dist_dir / "images" / f"{idx:06}.jpg"
         shutil.copy(src_im_path, dist_im_path)
-        #print(src_im_path, dist_im_path)
+        # print(src_im_path, dist_im_path)
 
 
 def _iter_image_infos():
@@ -57,6 +57,7 @@ def _iter_image_infos():
         im["id"] = idx
         im["file_name"] = f"{idx:06}.jpg"
         yield im
+
 
 def _iter_annotation_infos():
     for idx, (_, _, im, anno, keypoint) in enumerate(_iter_all(), 1):
@@ -80,6 +81,7 @@ def main(dist_dir):
     d["annotations"] = list(_iter_annotation_infos())
     js_str = json.dumps(d, indent=4)
     (dist_dir / "mathand_train.json").write_text(js_str)
+
 
 if __name__ == "__main__":
     target_dir = sys.argv[1]
