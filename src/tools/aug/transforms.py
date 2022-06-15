@@ -1,4 +1,6 @@
+import cv2
 import albumentations as A
+
 
 custom_transform = A.Compose(
     # [

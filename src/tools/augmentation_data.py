@@ -3,8 +3,8 @@ import pathlib
 import sys
 
 import cv2
-import albumentations as A
 
+# import albumentations as A
 
 import src.tools.aug.utils
 from src.tools.aug.transforms import custom_transform
@@ -25,40 +25,44 @@ def _iter_coco_anno(im_list, anno_list, image_dir):
         yield file_name, im, anno
 
 
-def reg(file_path, keypoints, bbox):
-    print(bbox)
-
+def convert_from_coco_format(keypoints):
     def _iter():
         for i in range(0, len(keypoints), 3):
             yield tuple(keypoints[i : i + 2])
 
-    keypoints = list(_iter())
-    print(keypoints)
+    return list(_iter())
 
-    image = load_as_cv2(file_path)
 
-    images_list = [image]
-    saved_keypoints_list = [keypoints]
-    saved_bboxes_list = [bbox]
-    for _ in range(20):
+# def exec_aug(original_image, *, keypoints, bbox, aug_count):
+#     images_list = [image]
+#     saved_keypoints_list = [keypoints]
+#     saved_bboxes_list = [bbox]
+
+#     cv2.imwrite("data/dst/lena_opencv_red.jpg", im)
+#     src.tools.aug.utils.plot_examples(
+#         images_list,
+#         saved_bboxes_list,
+#         saved_keypoints_list,
+#     )
+
+
+def _iter_augment(original_image, *, keypoints, bbox, aug_count):
+    for _ in range(aug_count):
         transformed = custom_transform(
-            image=image, keypoints=keypoints, bboxes=[bbox], class_labels=["mat"]
+            image=original_image,
+            keypoints=keypoints,
+            bboxes=[bbox],
+            class_labels=["mat"],
         )
         transformed_image = transformed["image"]
         transformed_keypoints = transformed["keypoints"]
         transformed_bboxes = transformed["bboxes"]
         if len(transformed_bboxes) == 0:
-            continue
-        # print(transformed_keypoints)
-
-        images_list.append(transformed_image)
-        saved_keypoints_list.append(transformed_keypoints)
-        saved_bboxes_list.append(transformed_bboxes[0])
-    # src.tools.aug.utils.plot_examples(
-    #     images_list,
-    #     saved_bboxes_list,
-    #     saved_keypoints_list,
-    # )
+            return
+        # images_list.append(transformed_image)
+        # saved_keypoints_list.append(transformed_keypoints)
+        # saved_bboxes_list.append(transformed_bboxes[0])
+        yield transformed_image, transformed_keypoints, transformed_bboxes[0]
 
 
 def main(base_dir):
@@ -67,8 +71,15 @@ def main(base_dir):
     d = load(coco_json)
     im_list = d["images"]
     anno_list = d["annotations"]
+    idx = 1
     for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
-        reg(file_path, anno["keypoints"], anno["bbox"])
+        original_image = load_as_cv2(file_path)
+        keypoints = convert_from_coco_format(anno["keypoints"])
+        bbox = anno["bbox"]
+        for t_image, t_keypoints, t_box in _iter_augment(
+            original_image, keypoints=keypoints, bbox=bbox, aug_count=3
+        ):
+            idx += 1
 
 
 def load_as_cv2(file_path):
