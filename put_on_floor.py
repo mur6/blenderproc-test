@@ -69,7 +69,7 @@ def set_resolution_and_get_render_size():
     return render_size
 
 
-def _write_keypoints(*, output_dir, keypoints_list, bbox_list):
+def _write_keypoints_and_bbox_data(*, output_dir, keypoints_list, bbox_list):
     d = dict(keypoints_list=keypoints_list, bbox_list=bbox_list)
     js_str = json.dumps(d, indent=4)
     (output_dir / "keypoints_and_bbox.json").write_text(js_str)
@@ -87,7 +87,7 @@ def _iter_class_segmaps_conv_to_bbox(class_segmap_list):
 
     for item in class_segmap_list:
         y_ary, x_ary = np.where(item == 1)
-        x, y, width, height = calc_bbox(x_ary, y_ary)
+        x, y, width, height = map(int, calc_bbox(x_ary, y_ary))
         yield x, y, width, height
 
 
@@ -106,8 +106,8 @@ def _render_and_save(*, count, list_of_keypoints):
         color_file_format="JPEG",
     )
 
-    _write_keypoints(
-        output_dir=output_dir, list_of_keypoints=list_of_keypoints, bbox_list=bbox_list
+    _write_keypoints_and_bbox_data(
+        output_dir=output_dir, keypoints_list=list_of_keypoints, bbox_list=bbox_list
     )
 
 
@@ -187,7 +187,7 @@ def main():
     ground.add_material(cc_textures[0])
 
     render_all(
-        obj, ground, poi, cc_textures=cc_textures, texture_count=1, sample_count=2
+        obj, ground, poi, cc_textures=cc_textures, texture_count=1, sample_count=1
     )
 
 
