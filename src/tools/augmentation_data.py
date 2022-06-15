@@ -6,6 +6,7 @@ import sys
 
 import cv2
 from PIL import Image
+import albumentations as A
 
 
 def load(json_file_path):
@@ -24,10 +25,27 @@ def _iter_coco_anno(im_list, anno_list, image_dir):
         yield file_name, im, anno
 
 
+transform = A.Compose(
+    [
+        A.RandomCrop(width=330, height=330),
+        A.RandomBrightnessContrast(p=0.2),
+    ],
+    keypoint_params=A.KeypointParams(
+        format="xy",
+        label_fields=["class_labels"],
+        remove_invisible=True,
+        angle_in_degrees=True,
+    ),
+)
+
+
 def reg(file_path):
     f = str(file_path)
     image = cv2.imread(f)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    transformed = transform(image=image, keypoints=keypoints)
+    transformed_image = transformed["image"]
+    transformed_keypoints = transformed["keypoints"]
 
 
 def main(base_dir):
