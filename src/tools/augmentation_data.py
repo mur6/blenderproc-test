@@ -1,12 +1,13 @@
 import json
 import os
 import pathlib
-import shutil
 import sys
 
 import cv2
-from PIL import Image
 import albumentations as A
+
+
+import src.tools.aug.utils
 
 
 def load(json_file_path):
@@ -15,7 +16,6 @@ def load(json_file_path):
     return d
 
 
-# OUTPUT_DATA_DIR =
 def _iter_coco_anno(im_list, anno_list, image_dir):
     assert len(im_list) == len(anno_list)
     for im, anno in zip(im_list, anno_list):
@@ -102,7 +102,7 @@ def reg(file_path, keypoints, bbox):
         images_list.append(transformed_image)
         saved_keypoints_list.append(transformed_keypoints)
         saved_bboxes_list.append(transformed_bboxes[0])
-    plot_examples(
+    src.tools.aug.utils.plot_examples(
         images_list,
         saved_bboxes_list,
         saved_keypoints_list,
@@ -123,46 +123,6 @@ def main(base_dir):
 
 ###########################################
 # import random
-import cv2
-from matplotlib import pyplot as plt
-
-# import matplotlib.patches as patches
-# import numpy as np
-import albumentations as A
-
-
-def visualize(image):
-    plt.figure(figsize=(10, 10))
-    plt.axis("off")
-    plt.imshow(image)
-    plt.show()
-
-
-def plot_examples(images, bboxes, keypoints):
-    fig = plt.figure(figsize=(15, 15))
-    columns = 4
-    rows = 5
-
-    for i in range(1, len(images)):
-        img = visualize_bbox(images[i - 1], bboxes[i - 1], keypoints[i - 1])
-        # else:
-        #     img = images[i - 1]
-        fig.add_subplot(rows, columns, i)
-        plt.imshow(img)
-    plt.show()
-
-
-def visualize_bbox(img, bbox, keypoints, color=(255, 0, 0), thickness=5):
-    # """Visualizes a single bounding box on the image"""
-    # x_min, y_min, x_max, y_max = map(int, bbox)
-    print(keypoints)
-    keypoints = [tuple(map(int, xy)) for xy in keypoints]
-    for x, y in keypoints:
-        cv2.circle(img, (x, y), 1, (0, 255, 0), thickness)
-    x_min, y_min, x_max, y_max = map(int, bbox)
-    cv2.rectangle(img, (x_min, y_min), (x_max, y_max), color, thickness)
-    return img
-
 
 if __name__ == "__main__":
     base_dir = sys.argv[1]
