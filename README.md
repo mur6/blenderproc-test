@@ -12,3 +12,9 @@ $ source .venv/bin/activate.fish
 ```
 blenderproc run put_on_floor.py
 ```
+
+
+## データ拡張
+```
+PYTHONPATH=. python src/tools/augmentation_data.py augmentation/
+```
