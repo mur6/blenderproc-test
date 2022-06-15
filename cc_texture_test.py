@@ -1,11 +1,12 @@
 import blenderproc as bproc
 
-import pprint
-import random
-from functools import reduce
-import pathlib
+import sys
+
+sys.path.append(".")
 
 import numpy as np
+
+from src.common import MATERIALS_PATH
 
 
 bproc.init()
@@ -15,7 +16,9 @@ def make_camera_position(poi):
     location = np.random.uniform([-1.35, -1.35, 1.95], [1.35, 1.35, 1.95])
     inplane_rot = np.random.uniform(-0.7854, 0.7854)
     forward_vec = poi - location
-    rotation_matrix = bproc.camera.rotation_from_forward_vec(forward_vec, inplane_rot=inplane_rot)
+    rotation_matrix = bproc.camera.rotation_from_forward_vec(
+        forward_vec, inplane_rot=inplane_rot
+    )
     cam_pose = bproc.math.build_transformation_mat([1, 1, 3], rotation_matrix)
     return cam_pose
 
@@ -54,7 +57,7 @@ def main():
     ground = bproc.object.create_primitive("PLANE", scale=[5, 5, 1])
     poi = bproc.object.compute_poi([ground])
 
-    cc_textures = bproc.loader.load_ccmaterials("datasets")
+    cc_textures = bproc.loader.load_ccmaterials(MATERIALS_PATH)
 
     ground.add_material(cc_textures[0])
 
@@ -71,5 +74,5 @@ def main():
     # data = {"colors": data1["colors"] + data2["colors"]}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
