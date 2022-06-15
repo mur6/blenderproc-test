@@ -1,3 +1,5 @@
 .venv/
 data/outputs/
 data/cc_materials
+augmentation
+*.pyc

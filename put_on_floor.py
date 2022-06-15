@@ -69,14 +69,32 @@ def set_resolution_and_get_render_size():
     return render_size
 
 
-def _write_keypoints(*, output_dir, list_of_keypoints):
-    js_str = json.dumps(list_of_keypoints, indent=4)
-    (output_dir / "list_of_keypoints.json").write_text(js_str)
+def _write_keypoints_and_bbox_data(*, output_dir, keypoints_list, bbox_list):
+    d = dict(keypoints_list=keypoints_list, bbox_list=bbox_list)
+    js_str = json.dumps(d, indent=4)
+    (output_dir / "keypoints_and_bbox.json").write_text(js_str)
+
+
+def _iter_class_segmaps_conv_to_bbox(class_segmap_list):
+    def calc_bbox(*, x_ary, y_ary):
+        x_min = x_ary.min()
+        x_max = x_ary.max()
+        y_min = y_ary.min()  # Y_MAX_PIXELS - y_ary.max()
+        y_max = y_ary.max()  # Y_MAX_PIXELS - y_ary.min()
+        width = x_max - x_min
+        height = y_max - y_min
+        return x_min, y_min, width, height
+
+    for item in class_segmap_list:
+        y_ary, x_ary = np.where(item == 1)
+        x, y, width, height = map(int, calc_bbox(x_ary=x_ary, y_ary=y_ary))
+        yield x, y, width, height
 
 
 def _render_and_save(*, count, list_of_keypoints):
     data = bproc.renderer.render()
     seg_data = bproc.renderer.render_segmap(map_by=["instance", "class", "name"])
+    bbox_list = list(_iter_class_segmaps_conv_to_bbox(seg_data["class_segmaps"]))
 
     output_dir = OUTPUT_DATA_DIR / f"{count}"
 
@@ -88,12 +106,17 @@ def _render_and_save(*, count, list_of_keypoints):
         color_file_format="JPEG",
     )
 
-    _write_keypoints(output_dir=output_dir, list_of_keypoints=list_of_keypoints)
+    _write_keypoints_and_bbox_data(
+        output_dir=output_dir, keypoints_list=list_of_keypoints, bbox_list=bbox_list
+    )
+
+
+Y_MAX_PIXELS = 512
 
 
 def _convert_camera_coord(coord_2d, *, render_size):
     x = round(coord_2d.x * render_size[0])
-    y = 512 - round(coord_2d.y * render_size[1])
+    y = Y_MAX_PIXELS - round(coord_2d.y * render_size[1])
     return x, y
 
 
@@ -164,7 +187,7 @@ def main():
     ground.add_material(cc_textures[0])
 
     render_all(
-        obj, ground, poi, cc_textures=cc_textures, texture_count=8, sample_count=8
+        obj, ground, poi, cc_textures=cc_textures, texture_count=7, sample_count=7
     )
 
 
