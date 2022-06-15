@@ -1,2 +1,2 @@
-albumentations
-autoalbument
+albumentations[imgaug]
+# autoalbument
