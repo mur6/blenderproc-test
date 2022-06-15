@@ -187,7 +187,7 @@ def main():
     ground.add_material(cc_textures[0])
 
     render_all(
-        obj, ground, poi, cc_textures=cc_textures, texture_count=1, sample_count=5
+        obj, ground, poi, cc_textures=cc_textures, texture_count=7, sample_count=7
     )
 
 
