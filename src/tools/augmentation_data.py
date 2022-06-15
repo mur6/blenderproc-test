@@ -93,7 +93,7 @@ def reg(file_path, keypoints, bbox):
             image=image, keypoints=keypoints, bboxes=[bbox], class_labels=["mat"]
         )
         transformed_image = transformed["image"]
-        transformed_keypoints = [tuple(map(int, xy)) for xy in transformed["keypoints"]]
+        transformed_keypoints = transformed["keypoints"]
         transformed_bboxes = transformed["bboxes"]
         if len(transformed_bboxes) == 0:
             continue
@@ -102,7 +102,11 @@ def reg(file_path, keypoints, bbox):
         images_list.append(transformed_image)
         saved_keypoints_list.append(transformed_keypoints)
         saved_bboxes_list.append(transformed_bboxes[0])
-    plot_examples(images_list, saved_keypoints_list, saved_bboxes_list)
+    plot_examples(
+        images_list,
+        saved_bboxes_list,
+        saved_keypoints_list,
+    )
 
 
 def main(base_dir):
@@ -134,13 +138,13 @@ def visualize(image):
     plt.show()
 
 
-def plot_examples(images, keypoints):
+def plot_examples(images, bboxes, keypoints):
     fig = plt.figure(figsize=(15, 15))
     columns = 4
     rows = 5
 
     for i in range(1, len(images)):
-        img = visualize_bbox(images[i - 1], keypoints[i - 1])
+        img = visualize_bbox(images[i - 1], bboxes[i - 1], keypoints[i - 1])
         # else:
         #     img = images[i - 1]
         fig.add_subplot(rows, columns, i)
@@ -148,12 +152,15 @@ def plot_examples(images, keypoints):
     plt.show()
 
 
-def visualize_bbox(img, keypoints, color=(255, 0, 0), thickness=5):
+def visualize_bbox(img, bbox, keypoints, color=(255, 0, 0), thickness=5):
     # """Visualizes a single bounding box on the image"""
     # x_min, y_min, x_max, y_max = map(int, bbox)
     print(keypoints)
+    keypoints = [tuple(map(int, xy)) for xy in keypoints]
     for x, y in keypoints:
-        cv2.circle(img, (x, y), 1, color, thickness)
+        cv2.circle(img, (x, y), 1, (0, 255, 0), thickness)
+    x_min, y_min, x_max, y_max = map(int, bbox)
+    cv2.rectangle(img, (x_min, y_min), (x_max, y_max), color, thickness)
     return img
 
 
