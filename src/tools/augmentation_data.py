@@ -1,5 +1,4 @@
 import json
-import os
 import pathlib
 import sys
 
@@ -8,6 +7,7 @@ import albumentations as A
 
 
 import src.tools.aug.utils
+from src.tools.aug.transforms import custom_transform
 
 
 def load(json_file_path):
@@ -23,53 +23,6 @@ def _iter_coco_anno(im_list, anno_list, image_dir):
         file_name = image_dir / im["file_name"]
         assert file_name.exists()
         yield file_name, im, anno
-
-
-transform = A.Compose(
-    # [
-    #     A.RandomCrop(width=330, height=330),
-    #     A.RandomBrightnessContrast(p=0.2),
-    # ],
-    [
-        # A.RandomCrop(width=512, height=512),
-        A.Rotate(limit=40, p=0.9, border_mode=cv2.BORDER_CONSTANT),
-        A.HorizontalFlip(p=0.5),
-        A.VerticalFlip(p=0.1),
-        A.OneOf(
-            [
-                A.Cutout(
-                    num_holes=30, max_h_size=30, max_w_size=30, fill_value=64, p=1
-                ),
-                # A.GridDistortion(p=0.1),
-                # A.Affine(p=0.5),
-            ],
-            p=0.75,
-        ),
-        A.RGBShift(r_shift_limit=25, g_shift_limit=25, b_shift_limit=25, p=0.9),
-        A.OneOf(
-            [
-                A.Blur(blur_limit=3, p=0.5),
-                A.ColorJitter(p=0.5),
-            ],
-            p=0.3,
-        ),
-        A.OneOf(
-            [
-                A.IAAAdditiveGaussianNoise(),
-                A.GaussNoise(),
-                A.RandomBrightnessContrast(p=0.2),
-            ],
-            p=0.4,
-        ),
-    ],
-    keypoint_params=A.KeypointParams(
-        format="xy",
-        # label_fields=["class_labels"],
-        remove_invisible=True,
-        # angle_in_degrees=True,
-    ),
-    bbox_params=A.BboxParams(format="coco", label_fields=["class_labels"]),
-)
 
 
 def reg(file_path, keypoints, bbox):
@@ -88,7 +41,7 @@ def reg(file_path, keypoints, bbox):
     saved_keypoints_list = [keypoints]
     saved_bboxes_list = [bbox]
     for _ in range(20):
-        transformed = transform(
+        transformed = custom_transform(
             image=image, keypoints=keypoints, bboxes=[bbox], class_labels=["mat"]
         )
         transformed_image = transformed["image"]
@@ -101,11 +54,11 @@ def reg(file_path, keypoints, bbox):
         images_list.append(transformed_image)
         saved_keypoints_list.append(transformed_keypoints)
         saved_bboxes_list.append(transformed_bboxes[0])
-    src.tools.aug.utils.plot_examples(
-        images_list,
-        saved_bboxes_list,
-        saved_keypoints_list,
-    )
+    # src.tools.aug.utils.plot_examples(
+    #     images_list,
+    #     saved_bboxes_list,
+    #     saved_keypoints_list,
+    # )
 
 
 def main(base_dir):
@@ -116,7 +69,6 @@ def main(base_dir):
     anno_list = d["annotations"]
     for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
         reg(file_path, anno["keypoints"], anno["bbox"])
-        break
 
 
 def load_as_cv2(file_path):
