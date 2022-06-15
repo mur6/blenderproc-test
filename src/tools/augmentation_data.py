@@ -41,7 +41,7 @@ transform = A.Compose(
                     num_holes=30, max_h_size=30, max_w_size=30, fill_value=64, p=1
                 ),
                 # A.GridDistortion(p=0.1),
-                A.PiecewiseAffine(p=0.5),
+                # A.Affine(p=0.5),
             ],
             p=0.75,
         ),
@@ -53,14 +53,14 @@ transform = A.Compose(
             ],
             p=0.3,
         ),
-        # A.OneOf(
-        #     [
-        #         A.IAAAdditiveGaussianNoise(),
-        #         A.GaussNoise(),
-        #         A.RandomBrightnessContrast(),
-        #     ],
-        #     p=0.3,
-        # ),
+        A.OneOf(
+            [
+                A.IAAAdditiveGaussianNoise(),
+                A.GaussNoise(),
+                A.RandomBrightnessContrast(p=0.2),
+            ],
+            p=0.4,
+        ),
     ],
     keypoint_params=A.KeypointParams(
         format="xy",
@@ -81,14 +81,13 @@ def reg(file_path, keypoints, bbox):
 
     keypoints = list(_iter())
     print(keypoints)
-    f = str(file_path)
-    image = cv2.imread(f)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    image = load_as_cv2(file_path)
 
     images_list = [image]
     saved_keypoints_list = [keypoints]
     saved_bboxes_list = [bbox]
-    for _ in range(15):
+    for _ in range(20):
         transformed = transform(
             image=image, keypoints=keypoints, bboxes=[bbox], class_labels=["mat"]
         )
@@ -110,18 +109,17 @@ def reg(file_path, keypoints, bbox):
 
 
 def main(base_dir):
-    image_dir = base_dir / "mathand" / "train"
+    image_dir = base_dir / "images"  # / "mathand" / "train"
     coco_json = base_dir / "mathand_train.json"
     d = load(coco_json)
     im_list = d["images"]
     anno_list = d["annotations"]
     for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
-        # print(anno)
         reg(file_path, anno["keypoints"], anno["bbox"])
         break
 
 
-def check_images(file_path, keypoints, bbox):
+def load_as_cv2(file_path):
     f = str(file_path)
     image = cv2.imread(f)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -131,7 +129,7 @@ def check_images(file_path, keypoints, bbox):
 from matplotlib import pyplot as plt
 
 
-def main2(base_dir):
+def main_for_check_data(base_dir):
     image_dir = base_dir / "images"  # / "mathand" / "train"
     coco_json = base_dir / "mathand_train.json"
     d = load(coco_json)
@@ -151,8 +149,8 @@ def main2(base_dir):
         assert im["id"] == anno["image_id"]
         keypoints = list(_iter(anno["keypoints"]))
         print(f"keypoints: {keypoints}")
-        image = check_images(file_path, keypoints, anno["bbox"])
-        img = src.tools.aug.utils.visualize_bbox(image, anno["bbox"], keypoints)
+        image = load_as_cv2(file_path)
+        src.tools.aug.utils.visualize_bbox_wh(image, anno["bbox"], keypoints)
         fig.add_subplot(rows, columns, count)
         count += 1
         plt.imshow(image)
@@ -161,4 +159,4 @@ def main2(base_dir):
 
 if __name__ == "__main__":
     base_dir = sys.argv[1]
-    main2(pathlib.Path(base_dir))
+    main(pathlib.Path(base_dir))
