@@ -41,7 +41,7 @@ transform = A.Compose(
                     num_holes=30, max_h_size=30, max_w_size=30, fill_value=64, p=1
                 ),
                 # A.GridDistortion(p=0.1),
-                A.PiecewiseAffine(p=0.3),
+                A.PiecewiseAffine(p=0.5),
             ],
             p=0.75,
         ),
@@ -68,10 +68,13 @@ transform = A.Compose(
         remove_invisible=True,
         # angle_in_degrees=True,
     ),
+    bbox_params=A.BboxParams(format="coco", label_fields=["class_labels"]),
 )
 
 
-def reg(file_path, keypoints):
+def reg(file_path, keypoints, bbox):
+    print(bbox)
+
     def _iter():
         for i in range(0, len(keypoints), 3):
             yield tuple(keypoints[i : i + 2])
@@ -81,21 +84,25 @@ def reg(file_path, keypoints):
     f = str(file_path)
     image = cv2.imread(f)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    # transformed = transform(image=image, keypoints=keypoints)
 
     images_list = [image]
     saved_keypoints_list = [keypoints]
+    saved_bboxes_list = [bbox]
     for _ in range(15):
-        transformed = transform(image=image, keypoints=keypoints)  # bboxes=bboxes)
+        transformed = transform(
+            image=image, keypoints=keypoints, bboxes=[bbox], class_labels=["mat"]
+        )
         transformed_image = transformed["image"]
-        transformed_keypoints = transformed["keypoints"]
-        # if len(augmentations["bboxes"]) == 0:
-        #    continue
+        transformed_keypoints = [tuple(map(int, xy)) for xy in transformed["keypoints"]]
+        transformed_bboxes = transformed["bboxes"]
+        if len(transformed_bboxes) == 0:
+            continue
         # print(transformed_keypoints)
 
         images_list.append(transformed_image)
-        saved_keypoints_list.append(transformed_keypoints)  # augmentations["bboxes"][0]
-    plot_examples(images_list, saved_keypoints_list)
+        saved_keypoints_list.append(transformed_keypoints)
+        saved_bboxes_list.append(transformed_bboxes[0])
+    plot_examples(images_list, saved_keypoints_list, saved_bboxes_list)
 
 
 def main(base_dir):
@@ -105,7 +112,8 @@ def main(base_dir):
     im_list = d["images"]
     anno_list = d["annotations"]
     for file_path, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
-        reg(file_path, anno["keypoints"])
+        # print(anno)
+        reg(file_path, anno["keypoints"], anno["bbox"])
         break
 
 
