@@ -13,22 +13,23 @@ def load(json_file_path):
 
 
 # OUTPUT_DATA_DIR =
-def _iter_coco_anno(im_list, anno_list):
+def _iter_coco_anno(im_list, anno_list, image_dir):
     assert len(im_list) == len(anno_list)
     for im, anno in zip(im_list, anno_list):
         assert im["id"] == anno["image_id"]
-        # file_name = im["file_name"]
-        yield im, anno
+        file_name = image_dir / im["file_name"]
+        assert file_name.exists()
+        yield file_name, im, anno
 
 
 def main(base_dir):
-    image_data_dir = base_dir / "mathand" / "images"
+    image_dir = base_dir / "mathand" / "train"
     coco_json = base_dir / "mathand_train.json"
     d = load(coco_json)
     im_list = d["images"]
     anno_list = d["annotations"]
-    for im, anno in _iter_coco_anno(im_list, anno_list):
-        print(im)
+    for file_name, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
+        print(file_name)
 
 
 if __name__ == "__main__":
