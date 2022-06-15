@@ -1,9 +1,11 @@
-import PIL
 import json
 import os
 import pathlib
 import shutil
 import sys
+
+import cv2
+from PIL import Image
 
 
 def load(json_file_path):
@@ -30,6 +32,7 @@ def main(base_dir):
     anno_list = d["annotations"]
     for file_name, im, anno in _iter_coco_anno(im_list, anno_list, image_dir):
         print(file_name)
+        break
 
 
 if __name__ == "__main__":
