@@ -150,7 +150,7 @@ def render_all(obj, ground, poi, *, cc_textures, texture_count, sample_count):
         )
         _render_and_save(count=count, list_of_keypoints=list_of_keypoints)
         bproc.utility.reset_keyframes()
-        time.sleep(8)
+        time.sleep(10)
 
 
 def main():
