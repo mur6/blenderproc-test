@@ -16,5 +16,14 @@ blenderproc run put_on_floor.py
 
 ## データ拡張
 ```
-PYTHONPATH=. python src/tools/augmentation_data.py augmentation/
+$ source .venv/bin/activate.fish
+
+(.venv) $ PYTHONPATH=. python src/tools/augmentation_data.py aug source_dir target_dir
+```
+
+## データのビジュアライズ（チェック）
+```
+$ source .venv/bin/activate.fish
+
+(.venv) $ PYTHONPATH=. python src/tools/augmentation_data.py vis base_dir
 ```
